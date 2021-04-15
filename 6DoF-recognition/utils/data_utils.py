@@ -62,9 +62,11 @@ def create_gt_mask(pt_cld, intrinsics, tra, rot, label, image_shape=(480,640)):
 def calc_offset(keypoints, image_size=(480,640)):
     numkpt = keypoints.shape[0]
     X,Y = np.meshgrid(np.arange(image_size[0]), np.arange(image_size[1]))
-    offset = np.concatenate((np.expand_dims(X,axis=2),np.expand_dims(Y,axis=2)), axis=2)
+    offset = np.concatenate((np.expand_dims(Y,axis=2),np.expand_dims(X,axis=2)), axis=2)
     offset = np.tile(np.expand_dims(np.transpose(offset,(1,0,2)),axis=2), (1,1,numkpt,1))
-    offset = (keypoints - offset) / image_size
+    offset = (keypoints - offset) / (image_size[1], image_size[0])
+
+    offset = offset.transpose(2,3,0,1).reshape((len(keypoints)*2,)+image_size)
     
     return offset
 

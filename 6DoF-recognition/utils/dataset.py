@@ -25,7 +25,7 @@ class LINEMOD_Dataset(Dataset):
         self.transform = np.reshape(np.loadtxt(os.path.join(self.folder,"transform.dat"), skiprows=1, usecols=(1,)), [3,4])
 
         self.pt_cld = (self.transform @ get_homo_coord(self.pt_cld).T).T
-        self.bounding_box = get_bouding_box(self.pt_cld)
+        self.bounding_box = get_bounding_box(self.pt_cld)
         self.keypoints = FPSKeypoints(self.pt_cld)
 
         self.fx = 572.41140
@@ -33,7 +33,8 @@ class LINEMOD_Dataset(Dataset):
         self.fy = 573.57043
         self.py = 242.04899
 
-        self.rendered_intrinsics = np.loadtxt(os.path.join(root_dir,"rendered/camera.txt"))
+        if use_rendered:
+            self.rendered_intrinsics = np.loadtxt(os.path.join(root_dir,"rendered/camera.txt"))
         self.intrinsics = np.array([[self.fx, 0, self.px], [0, self.fy, self.py], [0, 0, 1]])
 
     def __len__(self):

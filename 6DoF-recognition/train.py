@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 
 from utils.dataset import *
@@ -15,11 +16,13 @@ image_shape = (480,640)
 
 log_every_n_step = 50
 
+writer = SummaryWriter(log_dir='./logs/')
+
 
 if __name__=='__main__':
-    model = ResNet_Baseline(8)
+    model = ResNet_Baseline(9).cuda().double()
 
-    dataset = LINEMOD_Dataset('/media/llewyn/TOSHIBA EXT/LINEMOD/LINEMOD')
+    dataset = LINEMOD_Dataset('/home/v-qianwan/LINEMOD/', 'ape', use_rendered=False)
     dataloader = DataLoader(dataset, batch_size=8, shuffle=True, num_workers=4)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=0.002)
@@ -31,11 +34,11 @@ if __name__=='__main__':
             rgb, mask, offset_gt, keypoints_2D = batch
 
             nb = len(rgb)
-            offset, conf = model(rgb)
+            offset, conf = model(rgb.cuda())
 
-            loss_offset = F.mse_loss(offset, offset_gt)
-            conf = F.softmax(conf.flatten(), dim=0).reshape((nb,)+image_shape)
-            loss_mask = F.binary_cross_entropy(conf, mask)
+            loss_offset = F.mse_loss(offset, offset_gt.cuda())
+            conf = F.softmax(conf.flatten(start_dim=1), dim=1).reshape((nb,)+image_shape)
+            loss_mask = F.binary_cross_entropy(conf, mask.cuda().double())
 
             loss = (loss_offset + loss_mask) / nb
             loss.backward()
