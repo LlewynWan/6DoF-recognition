@@ -16,7 +16,7 @@ numkpt = 9
 
 if __name__=='__main__':
     model = ResNet_Baseline(9).cuda().double()
-    model.load_state_dict(torch.load('models/epoch=90.ckpt'))
+    model.load_state_dict(torch.load('models/epoch=48.ckpt'))
     model = model.eval()
 
     rgb = cv2.imread('example/color0.jpg') / 255.
@@ -32,7 +32,7 @@ if __name__=='__main__':
     indices = np.round(offset).astype(int)
     grid = np.tile(np.expand_dims(grid, axis=2), (1,1,numkpt,1)).reshape(image_size+(numkpt,2))
 
-    mask_pred = F.softmax(mask_pred.flatten(start_dim=1), dim=1).reshape((1,)+image_size)
+    mask_pred = F.sigmoid(mask_pred)
     mask_pred = mask_pred.detach().cpu().numpy()
 
     x = []
@@ -62,7 +62,8 @@ if __name__=='__main__':
 
     cv2.imwrite('color.png', color)
     mask = create_gt_mask(dataset.pt_cld, dataset.intrinsics, tra, rot, 255)
-    mask = (np.clip(mask_pred[0],0,1.) * 255.).astype(np.uint8)
+    #mask = ((mask_pred[0] / mask_pred.max()) > 0.5).astype(np.uint8) * 255
+    mask = (np.clip(mask_pred[0] / mask_pred.max(),0,1.) * 255.).astype(np.uint8)
     cv2.imwrite('mask.png', mask)
 
     rot_gt = np.loadtxt('/home/v-qianwan/LINEMOD/ape/data/rot0.rot',skiprows=1)

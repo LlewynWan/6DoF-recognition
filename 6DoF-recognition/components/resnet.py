@@ -211,15 +211,15 @@ class ResNet(nn.Module):
         return x2s,x4s,x8s,x16s,x32s,xfc
 
 
-def resnet18(pretrained=False, **kwargs):
+def resnet18(pretrained=True, **kwargs):
     """Constructs a ResNet-18 model.
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
     model = ResNet(BasicBlock, [2, 2, 2, 2], **kwargs)
-    #if pretrained:
-    #    model.load_state_dict(model_zoo.load_url(model_urls['resnet18'],model_dir=proj_cfg.MODEL_DIR))
+    if pretrained:
+        model.load_state_dict(model_zoo.load_url(model_urls['resnet18'],model_dir='./models'))
     return model
 
 
